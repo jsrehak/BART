@@ -8,7 +8,7 @@
 
 namespace  {
 
-
+using ::testing::Return, ::testing::ContainerEq;
 
 template <typename DimensionWrapper>
 class InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest
@@ -20,7 +20,7 @@ class InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest
   using TestConverterType = bart::instrumentation::converter::utility::DealiiToOrderedComplexVector;
 
   InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest()
-      : bart::testing::DealiiTestDomain<DimensionWrapper::value>(1.0, 4) {}
+      : bart::testing::DealiiTestDomain<DimensionWrapper::value>(1.0, 3) {}
   std::shared_ptr<DomainType> domain_ptr_;
   void SetUp() override;
 };
@@ -32,51 +32,73 @@ void InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest<
   this->SetUpDealii();
 }
 
-using TestDimensions = ::testing::Types<bart::testing::TwoD>;
+using TestDimensions = ::testing::Types<bart::testing::TwoD, bart::testing::ThreeD>;
 TYPED_TEST_SUITE(InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest,
                  TestDimensions);
 
-::testing::AssertionResult IsOrdered(std::vector<dealii::Point<2>> points) {
+template <int dim>
+::testing::AssertionResult IsOrdered(std::vector<dealii::Point<dim>> points) {
   for (std::size_t i = 1; i < points.size(); ++i) {
-    auto& last_point{ points.at(i - 1) };
-    auto& this_point{ points.at(i) };
-    double this_y = this_point[1], this_x = this_point[0],
-    last_y = last_point[1], last_x = last_point[0];
+    auto &last_point{points.at(i - 1)};
+    auto &this_point{points.at(i)};
 
-    std::cout << "Point " << i << " y = " << this_y << " x = " << this_x << "\n";
-
-    if (this_y < last_y) {
-      // If y-value is less than previous, immppediate failure
-      return ::testing::AssertionFailure()
-          << "Index: " << i << " has y value " << this_y
-          << " but previous point has y value " << last_y;
-    } else if (this_y == last_y) {
-      // If y-value is equal, check x value;
-      if (this_x < last_x) {
+    if (dim == 3) {
+      double this_z = this_point[2], last_z = last_point[2];
+      if (this_z < last_z) {
         return ::testing::AssertionFailure()
-            << "Index: " << i << " has x value " << this_x
-            << " but previous point has x value " << last_x;
+            << "Index: " << i << " has z value " << this_z
+            << " but previous point has z value " << last_z;
+      } else if (this_z > last_z) {
+        break;
       }
+    }
+    if (dim >= 2) {
+      double this_y = this_point[1], last_y = last_point[1];
+      if (this_y < last_y) {
+        // If y-value is less than previous, fail
+        return ::testing::AssertionFailure()
+            << "Index: " << i << " has y value " << this_y
+            << " but previous point has y value " << last_y;
+      } else if (this_y > last_y) {
+        break;
+      }
+    }
+    // If x-value is less than previous, fail
+    double this_x = this_point[0], last_x = last_point[0];
+    if (this_x < last_x) {
+      return ::testing::AssertionFailure()
+          << "Index: " << i << " has x value " << this_x
+          << " but previous point has x value " << last_x;
     }
   }
   return ::testing::AssertionSuccess();
 }
 
 TYPED_TEST(InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest,
-       Dummy) {
+           OrderingMap) {
   constexpr int dim = this->dim;
   using Point = dealii::Point<dim>;
+  using TestConverterType = typename InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest<TypeParam>::TestConverterType;
 
   std::vector<Point> points(this->locally_owned_dofs_.size());
-
   constexpr int vertices_per_cell = dealii::GeometryInfo<dim>::vertices_per_cell;
   for (const auto& cell : this->cells_) {
     for (int index = 0; index < vertices_per_cell; ++index) {
-      points.at(cell->vertex_index(index)) = cell->vertex(index);
+      points.at(cell->vertex_dof_index(index, 0)) = cell->vertex(index);
     }
   }
+  TestConverterType test_converter;
 
-  EXPECT_TRUE(IsOrdered(points));
+  EXPECT_CALL(*this->domain_ptr_, Cells()).WillOnce(Return(this->cells_));
+  auto ordering_map = test_converter.CalculateOrderingMap(this->domain_ptr_.get());
+
+  ASSERT_EQ(ordering_map.size(), points.size());
+  std::vector<Point> ordered_points(this->locally_owned_dofs_.size());
+  for (const auto& [global_index, ordered_index] : ordering_map) {
+    ordered_points.at(ordered_index) = points.at(global_index);
+  }
+  EXPECT_TRUE(IsOrdered(ordered_points));
+  EXPECT_THAT(ordering_map, ContainerEq(test_converter.ordering_map()));
 }
 
 } // namespace 

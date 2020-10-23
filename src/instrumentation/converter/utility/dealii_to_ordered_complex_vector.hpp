@@ -16,14 +16,18 @@ class DealiiToOrderedComplexVector
  public:
   using ComplexVector = std::vector<std::complex<double>>;
   using DealiiVector = dealii::Vector<double>;
-  using GlobalDOFIndex = int;
+  using GlobalIndex = int;
   using OrderedIndex = int;
-  using OrderingMap = std::map<GlobalDOFIndex, OrderedIndex>;
+  using OrderingMap = std::map<GlobalIndex, OrderedIndex>;
 
   [[nodiscard]] ComplexVector Convert(const DealiiVector& input) const override;
 
   template <int dim>
   OrderingMap CalculateOrderingMap(domain::DefinitionI<dim>* domain_ptr);
+
+  [[nodiscard]] auto ordering_map() noexcept -> OrderingMap const { return ordering_map_; };
+ private:
+  OrderingMap ordering_map_{};
 };
 
 } // namespace bart::instrumentation::converter::utility
