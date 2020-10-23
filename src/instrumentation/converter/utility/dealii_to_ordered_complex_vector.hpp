@@ -11,21 +11,19 @@
 namespace bart::instrumentation::converter::utility {
 
 class DealiiToOrderedComplexVector
-    : public ConverterI<dealii::Vector<double>,
-                        std::vector<std::complex<double>>> {
+    : public ConverterI<dealii::Vector<double>, dealii::Vector<double>> {
  public:
-  using ComplexVector = std::vector<std::complex<double>>;
   using DealiiVector = dealii::Vector<double>;
   using GlobalIndex = int;
   using OrderedIndex = int;
   using OrderingMap = std::map<GlobalIndex, OrderedIndex>;
 
-  [[nodiscard]] ComplexVector Convert(const DealiiVector& input) const override;
+  [[nodiscard]] DealiiVector Convert(const DealiiVector& input) const override;
 
   template <int dim>
-  OrderingMap CalculateOrderingMap(domain::DefinitionI<dim>* domain_ptr);
+  auto CalculateOrderingMap(domain::DefinitionI<dim>* domain_ptr) -> OrderingMap;
 
-  [[nodiscard]] auto ordering_map() noexcept -> OrderingMap const { return ordering_map_; };
+  [[nodiscard]] OrderingMap ordering_map() const noexcept { return ordering_map_; };
  private:
   OrderingMap ordering_map_{};
 };

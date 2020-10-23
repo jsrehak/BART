@@ -7,9 +7,20 @@
 
 namespace bart::instrumentation::converter::utility {
 
-auto DealiiToOrderedComplexVector::Convert(const DealiiVector& /*input*/) const
--> ComplexVector {
-  return std::vector<std::complex<double>>();
+auto DealiiToOrderedComplexVector::Convert(const DealiiVector& input) const
+-> DealiiVector {
+  AssertThrow(ordering_map_.size() > 0,
+      dealii::ExcMessage("error in DealiiToOrderedComplexVector::Convert, ordering_map is empty, have you called "
+                         "CalculateOrderingMap?"))
+  AssertThrow(ordering_map_.size() == input.size(),
+      dealii::ExcMessage("Error in DealiiToOrderedComplexVector::Convert, ordering_map is not the same size as "
+                         " input."))
+  DealiiVector ordered_vector(input.size());
+  for (auto& [global_index, ordered_index] : ordering_map_) {
+    ordered_vector[ordered_index] = input[global_index];
+  }
+
+  return ordered_vector;
 }
 
 template<int dim>

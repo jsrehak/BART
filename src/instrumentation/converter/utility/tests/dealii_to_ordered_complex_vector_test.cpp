@@ -5,10 +5,13 @@
 #include "domain/tests/definition_mock.h"
 #include "test_helpers/gmock_wrapper.h"
 #include "test_helpers/dealii_test_domain.h"
+#include "test_helpers/test_helper_functions.h"
 
 namespace  {
 
 using ::testing::Return, ::testing::ContainerEq;
+
+namespace test_helpers = bart::test_helpers;
 
 template <typename DimensionWrapper>
 class InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest
@@ -99,6 +102,39 @@ TYPED_TEST(InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest,
   }
   EXPECT_TRUE(IsOrdered(ordered_points));
   EXPECT_THAT(ordering_map, ContainerEq(test_converter.ordering_map()));
+}
+
+TYPED_TEST(InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest,
+           ConvertNoOrderingMap) {
+  using DealiiVector = dealii::Vector<double>;
+  using TestConverterType = typename InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest<TypeParam>::TestConverterType;
+  TestConverterType test_converter;
+  EXPECT_ANY_THROW({
+    test_converter.Convert(DealiiVector{});
+  });
+}
+
+TYPED_TEST(InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest,
+           Convert) {
+  using DealiiVector = dealii::Vector<double>;
+  using TestConverterType = typename InstrumentationConverterUtilityDealiiToOrderedComplexVectorTest<TypeParam>::TestConverterType;
+
+  DealiiVector to_convert(this->locally_owned_dofs_.size());
+  for (auto& value : to_convert)
+    value = test_helpers::RandomDouble(-100, 100);
+
+  TestConverterType test_converter;
+  EXPECT_CALL(*this->domain_ptr_, Cells()).WillOnce(Return(this->cells_));
+  auto ordering_map = test_converter.CalculateOrderingMap(this->domain_ptr_.get());
+
+  DealiiVector ordered_vector(this->locally_owned_dofs_.size());
+  for (auto& [global_index, ordered_index] : ordering_map) {
+    ordered_vector[ordered_index] = to_convert[global_index];
+  }
+
+  auto converted_vector = test_converter.Convert(to_convert);
+  ASSERT_NE(converted_vector.size(), 0);
+  EXPECT_EQ(converted_vector, ordered_vector);
 }
 
 } // namespace 
