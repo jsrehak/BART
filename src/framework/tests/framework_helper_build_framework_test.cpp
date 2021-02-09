@@ -233,7 +233,7 @@ auto FrameworkHelperBuildFrameworkIntegrationTests<DimensionWrapper>::SetUp() ->
   ON_CALL(mock_builder_, BuildFiniteElement(_,_,_)).WillByDefault(ReturnByMove(finite_element_ptr));
   ON_CALL(mock_builder_, BuildGroupSolution(_)).WillByDefault(ReturnByMove(group_solution_ptr));
   ON_CALL(mock_builder_, BuildGroupSolveIteration(_,_,_,_,_,_)).WillByDefault(ReturnByMove(group_solve_iteration_ptr));
-  ON_CALL(mock_builder_, BuildInitializer(_,_,_)).WillByDefault(ReturnByMove(initializer_ptr));
+  ON_CALL(mock_builder_, BuildInitializer(_,_,_,_)).WillByDefault(ReturnByMove(initializer_ptr));
   ON_CALL(mock_builder_, BuildKEffectiveUpdater(_,_,_)).WillByDefault(ReturnByMove(k_effective_updater_ptr));
   ON_CALL(mock_builder_, BuildKEffectiveUpdater()).WillByDefault(ReturnByMove(k_effective_updater_rayleigh_ptr));
   ON_CALL(mock_builder_, BuildMomentCalculator(_)).WillByDefault(ReturnByMove(moment_calculator_ptr));
@@ -330,6 +330,7 @@ auto FrameworkHelperBuildFrameworkIntegrationTests<DimensionWrapper>::SetExpecta
     reflective_boundaries.at(boundary) = true;
   }
 
+  auto initializer_type{ iteration::initializer::InitializerName::kInitializeFixedTermsOnce };
   // SAAF Specific calls
   if (parameters.equation_type == problem::EquationType::kSelfAdjointAngularFlux) {
 
@@ -388,15 +389,18 @@ auto FrameworkHelperBuildFrameworkIntegrationTests<DimensionWrapper>::SetExpecta
     EXPECT_CALL(mock_builder, BuildUpdaterPointers(A<DiffusionFormulationPtr>(),
                                                    A<DriftDiffusionFormulationPtr>(),
                                                    Pointee(Ref(*stamper_obs_ptr_)), _, _, _, _)).WillOnce(DoDefault());
+    initializer_type = iteration::initializer::InitializerName::kInitializeFixedTermsAndResetMoments;
   }
 
   // End formulation specific calls, need_angular_storage should be set properly now
 
   EXPECT_CALL(mock_builder, BuildGroupSolution(n_angles)).WillOnce(DoDefault());
 
+
   EXPECT_CALL(mock_builder, BuildInitializer(Pointee(Ref(*updater_pointers_.fixed_updater_ptr)),
                                              parameters.neutron_energy_groups,
-                                             n_angles)).WillOnce(DoDefault());
+                                             n_angles,
+                                             initializer_type)).WillOnce(DoDefault());
   EXPECT_CALL(*system_helper_mock_ptr_, SetUpMPIAngularSolution(Ref(*group_solution_obs_ptr_),
                                                                 Ref(*domain_obs_ptr_),
                                                                 1.0));

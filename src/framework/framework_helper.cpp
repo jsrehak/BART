@@ -232,9 +232,14 @@ auto FrameworkHelper<dim>::BuildFramework(
     }
   }
 
+  auto initializer_name{ iteration::initializer::InitializerName::kInitializeFixedTermsOnce };
+  if (parameters.equation_type == EquationType::kDriftDiffusion) {
+    initializer_name = iteration::initializer::InitializerName::kInitializeFixedTermsAndResetMoments;
+  }
   auto initializer_ptr = builder.BuildInitializer(updater_pointers.fixed_updater_ptr,
                                                   parameters.neutron_energy_groups,
-                                                  n_angles);
+                                                  n_angles,
+                                                  initializer_name);
 
   auto group_solution_ptr = Shared(builder.BuildGroupSolution(n_angles));
   system_helper_ptr_->SetUpMPIAngularSolution(*group_solution_ptr, *domain_ptr, 1.0);
