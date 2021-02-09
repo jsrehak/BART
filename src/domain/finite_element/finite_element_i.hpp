@@ -127,6 +127,13 @@ class FiniteElementI : public utility::HasDescription {
    */
   virtual auto ValueAtQuadrature(const DealiiVector& vector_at_dofs) const -> std::vector<double> = 0;
 
+  /*! \brief Get the gradient of a vector at global dofs at the interior cell quadrature points.
+   *
+   * @param values_at_dofs vector of values at global dofs
+   * @return a vector with dealii tensors that indicate the gradient at interior quadrature points
+   */
+  virtual auto GradientAtQuadrature(const DealiiVector& values_at_dofs) const -> std::vector<Tensor> = 0;
+
   /*! \brief Get the value of an MPI Vector at the cell face quadrature points.
    *
    * @param mpi_vector mpi vector to get the face values of.

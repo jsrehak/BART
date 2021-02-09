@@ -56,8 +56,10 @@ class FiniteElement : public FiniteElementI<dim> {
     return face_values_->normal_vector(0);
   }
 
+
   [[nodiscard]] auto ValueAtQuadrature(const DealiiVector& values_at_dofs) const -> std::vector<double> override;
   [[nodiscard]] auto ValueAtFaceQuadrature(const DealiiVector& values_at_dofs) const -> std::vector<double> override;
+  [[nodiscard]] auto GradientAtQuadrature(const DealiiVector& values_at_dofs) const -> std::vector<Tensor> override;
 
   // Dependencies
   auto finite_element() -> dealii::FiniteElement<dim, dim>* override { return finite_element_.get(); };

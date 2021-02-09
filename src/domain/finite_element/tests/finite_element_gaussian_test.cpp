@@ -169,6 +169,11 @@ TYPED_TEST(DomainFiniteElementGaussianBaseMethodsTest, BaseSetCellAndFace) {
   this->TestSetCellAndFace(&test_fe);
 }
 
+TYPED_TEST(DomainFiniteElementGaussianBaseMethodsTest, BaseGradientAtQuadrature) {
+  bart::domain::finite_element::FiniteElementGaussian<this->dim> test_fe{problem::DiscretizationType::kContinuousFEM, 2};
+  this->TestGraidentAtQuadrature(&test_fe);
+}
+
 TYPED_TEST(DomainFiniteElementGaussianBaseMethodsTest, BaseValueAtQuadrature) {
   bart::domain::finite_element::FiniteElementGaussian<this->dim> test_fe{
       problem::DiscretizationType::kDiscontinuousFEM, 2};
