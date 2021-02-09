@@ -44,6 +44,13 @@ auto FiniteElement<dim>::ValueAtQuadrature(const DealiiVector& values_at_dofs) c
   return return_vector;
 }
 
+template <int dim>
+auto FiniteElement<dim>::GradientAtQuadrature(const DealiiVector& values_at_dofs) const -> std::vector<Tensor> {
+  std::vector<Tensor> return_vector(n_cell_quad_pts());
+  values_->get_function_gradients(values_at_dofs, return_vector);
+  return return_vector;
+}
+
 template<int dim>
 auto FiniteElement<dim>::ValueAtFaceQuadrature(const DealiiVector& values_at_dofs) const -> std::vector<double> {
   std::vector<double> return_vector(n_face_quad_pts(), 0);

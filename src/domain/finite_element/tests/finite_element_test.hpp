@@ -21,6 +21,7 @@ class FiniteElementBaseClassTest : public ::testing::Test {
   void TestSetCell(domain::finite_element::FiniteElement<dim>* test_fe);
   void TestSetCellAndFace(domain::finite_element::FiniteElement<dim>* test_fe);
   void TestValueAtQuadrature(domain::finite_element::FiniteElement<dim>* test_fe);
+  void TestGraidentAtQuadrature(domain::finite_element::FiniteElement<dim>* test_fe);
   void TestValueAtFaceQuadrature(domain::finite_element::FiniteElement<dim>* test_fe);
   void SetUp() override {
     dealii::GridGenerator::hyper_cube(triangulation_, -1, 1);
@@ -101,7 +102,34 @@ void FiniteElementBaseClassTest<dim>::TestValueAtQuadrature(FiniteElement<dim> *
 }
 
 template <int dim>
+<<<<<<< HEAD
 void FiniteElementBaseClassTest<dim>::TestValueAtFaceQuadrature(FiniteElement<dim> *test_fe) {
+=======
+void FiniteElementBaseClassTest<dim>::TestGraidentAtQuadrature(domain::finite_element::FiniteElement<dim> *test_fe) {
+  using Tensor = dealii::Tensor<1, dim>;
+  using Vector = dealii::Vector<double>;
+
+  dof_handler_.distribute_dofs(*test_fe->finite_element());
+  test_fe->SetCell(dof_handler_.begin_active());
+
+  const int n_dofs{ static_cast<int>(dof_handler_.n_dofs()) };
+  const int n_cell_quadrature_points{ test_fe->n_cell_quad_pts() };
+
+  const std::vector<double> constant_vector_values(n_dofs, 1.0);
+  const Vector test_vector(constant_vector_values.cbegin(), constant_vector_values.cend());
+
+  auto result_tensor_vector = test_fe->GradientAtQuadrature(test_vector);
+  ASSERT_EQ(result_tensor_vector.size(), n_cell_quadrature_points);
+  for(const auto& tensor : result_tensor_vector) {
+    for (int dir = 0; dir < dim; ++dir)
+      EXPECT_NEAR(tensor[dir], 0.0, 1e-6);
+  }
+}
+
+template <int dim>
+void FiniteElementBaseClassTest<dim>::TestValueAtFaceQuadrature(
+    FiniteElement<dim> *test_fe) {
+>>>>>>> Added FiniteElementI::GradientAtQuadrature.
 
   dof_handler_.distribute_dofs(*test_fe->finite_element());
 
