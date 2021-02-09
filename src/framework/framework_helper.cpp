@@ -408,6 +408,7 @@ auto FrameworkHelper<dim>::BuildFramework(
     auto nda_parameters{ parameters };
     nda_parameters.name = "NDA Drift-Diffusion";
     nda_parameters.use_nda_ = false;
+    nda_parameters.equation_type = problem::EquationType::kDriftDiffusion;
     nda_parameters.framework_level_ = 1;
     nda_parameters.output_filename_base = parameters.output_filename_base + "_nda";
     nda_parameters.nda_data_.angular_flux_integrator_ptr_ =
