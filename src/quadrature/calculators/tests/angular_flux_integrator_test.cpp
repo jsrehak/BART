@@ -271,6 +271,52 @@ TYPED_TEST(AngularFluxIntegratorTest, DirectionalFluxDofSpecified) {
   }
 }
 
+TYPED_TEST(AngularFluxIntegratorTest, EddingtonCurrent) {
+  using Vector = dealii::Vector<double>;
+  using AngleIndex = quadrature::QuadraturePointIndex;
+  constexpr int dim = this->dim;
+  const double sigma_t{ 4.0 };
+  const int angular_flux_max_index{ 2 }; // Just using the non-specific "index" here, this could be quadrature point or dof
+  std::map<AngleIndex, std::vector<Vector>> angular_flux_gradient_map;
+
+  EXPECT_CALL(*this->quadrature_set_ptr_, size()).WillOnce(DoDefault());
+  for (auto &quadrature_point : this->mock_quadrature_points_) {
+    EXPECT_CALL(*quadrature_point, weight()).WillOnce(DoDefault());
+    EXPECT_CALL(*quadrature_point, cartesian_position_tensor()).WillOnce(DoDefault());
+  }
+
+  for (int angle = 0; angle < this->n_quadrature_points; ++angle) {
+    EXPECT_CALL(*this->quadrature_set_ptr_, GetQuadraturePoint(AngleIndex(angle))).WillOnce(DoDefault());
+
+    std::vector<Vector> angle_gradient_vector;
+    for (int index = 0; index < angular_flux_max_index; ++index) {
+      Vector angular_flux_gradient(dim);
+      for (int dir = 0; dir < dim; ++dir)
+        angular_flux_gradient[dir] = angle + index + 1;
+      angle_gradient_vector.push_back(angular_flux_gradient);
+    }
+    angular_flux_gradient_map[AngleIndex(angle)] = angle_gradient_vector;
+  }
+
+  std::vector<Vector> expected_eddington_current;
+  for (int index = 0; index < angular_flux_max_index; ++index)
+    expected_eddington_current.push_back(Vector(dim));
+  const double eddington_current_at_0{ dim/4.0 * (7.85) };
+  const double eddington_current_at_1{ dim/4.0 * (10.65) };
+  for (int dir = 0; dir < dim; ++dir) {
+    expected_eddington_current.at(0)[dir] = eddington_current_at_0;
+    expected_eddington_current.at(1)[dir] = eddington_current_at_1;
+  }
+
+  const auto returned_eddington_current = this->test_integrator_->EddingtonCurrent(angular_flux_gradient_map, sigma_t);
+  ASSERT_EQ(returned_eddington_current.size(), angular_flux_max_index);
+  for (int index = 0; index < angular_flux_max_index; ++index) {
+    auto& returned_current = returned_eddington_current.at(index);
+    ASSERT_EQ(returned_current.size(), dim);
+    EXPECT_TRUE(test_helpers::AreEqual(returned_current, expected_eddington_current.at(index)));
+  }
+}
+
 TYPED_TEST(AngularFluxIntegratorTest, NetCurrentDofSpecified) {
   for (int dof = 0; dof < this->n_total_dofs; ++dof) {
     EXPECT_CALL(*this->quadrature_set_ptr_, size()).WillOnce(DoDefault());

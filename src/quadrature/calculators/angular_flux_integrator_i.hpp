@@ -31,8 +31,10 @@ class AngularFluxIntegratorI {
   using Vector = dealii::Vector<double>;
   using VectorPtr = std::shared_ptr<dealii::Vector<double>>;
   using VectorMap = std::map<quadrature::QuadraturePointIndex, VectorPtr>;
+  using GradientMap = std::map<quadrature::QuadraturePointIndex, std::vector<Vector>>;
   using DegreeOfFreedom = utility::NamedType<int, struct DegreeOfFreedomParam>;
 
+  virtual auto EddingtonCurrent(const GradientMap&, const double sigma_t) const -> std::vector<Vector> = 0;
   virtual auto NetCurrent(const VectorMap&) const -> std::vector<Vector> = 0;
   virtual auto NetCurrent(const VectorMap&, const DegreeOfFreedom) const -> Vector = 0;
   virtual auto DirectionalCurrent(const VectorMap&, const Vector normal) const -> std::vector<double> = 0;

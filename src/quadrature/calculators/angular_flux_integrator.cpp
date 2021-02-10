@@ -17,6 +17,29 @@ bool AngularFluxIntegrator<dim>::is_registered_ =
           return std::make_unique<AngularFluxIntegrator<dim>>(quadrature_set_ptr); });
 
 template<int dim>
+auto AngularFluxIntegrator<dim>::EddingtonCurrent(const GradientMap& gradient_map,
+                                                  const double sigma_t) const -> std::vector<Vector>{
+  using AngleIndex = quadrature::QuadraturePointIndex;
+  const auto max_index{ gradient_map.cbegin()->second.size() };
+  const GradientMap::size_type n_quadrature_points{ this->quadrature_set_ptr_->size() };
+  std::vector<Vector> return_vector(max_index);
+
+  for (GradientMap::size_type angle_index = 0; angle_index < n_quadrature_points; ++angle_index) {
+    auto quadrature_point = quadrature_set_ptr_->GetQuadraturePoint(AngleIndex(angle_index));
+    const double weight{ quadrature_point->weight() };
+    const auto position{ quadrature_point->cartesian_position_tensor() };
+    const double sum_constant{ weight * position * position /sigma_t };
+    for (std::vector<Vector>::size_type index = 0; index < max_index; ++index) {
+      auto& index_vector = return_vector.at(index);
+      if (index_vector.size() == 0)
+        index_vector.reinit(dim);
+      index_vector.add(sum_constant, gradient_map.at(AngleIndex(angle_index)).at(index));
+    }
+  }
+  return return_vector;
+}
+
+template<int dim>
 auto AngularFluxIntegrator<dim>::NetCurrent(const VectorMap& angular_flux_map) const -> std::vector<Vector> {
   const auto n_dofs{ angular_flux_map.cbegin()->second->size() };
   std::vector<Vector> return_vector;

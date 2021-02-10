@@ -18,6 +18,7 @@ class AngularFluxIntegrator : public AngularFluxIntegratorI, public utility::Has
 
   AngularFluxIntegrator(std::shared_ptr<QuadratureSet>);
 
+  [[nodiscard]] auto EddingtonCurrent(const GradientMap &map, const double sigma_t) const -> std::vector<Vector> override;
   [[nodiscard]] auto NetCurrent(const VectorMap&) const -> std::vector<Vector> override;
   [[nodiscard]] auto NetCurrent(const VectorMap&, DegreeOfFreedom) const -> Vector override;
   [[nodiscard]] auto DirectionalCurrent(const VectorMap&, const Vector normal) const -> std::vector<double> override;
