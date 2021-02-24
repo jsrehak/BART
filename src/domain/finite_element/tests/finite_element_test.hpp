@@ -102,9 +102,6 @@ void FiniteElementBaseClassTest<dim>::TestValueAtQuadrature(FiniteElement<dim> *
 }
 
 template <int dim>
-<<<<<<< HEAD
-void FiniteElementBaseClassTest<dim>::TestValueAtFaceQuadrature(FiniteElement<dim> *test_fe) {
-=======
 void FiniteElementBaseClassTest<dim>::TestGraidentAtQuadrature(domain::finite_element::FiniteElement<dim> *test_fe) {
   using Tensor = dealii::Tensor<1, dim>;
   using Vector = dealii::Vector<double>;
@@ -127,10 +124,7 @@ void FiniteElementBaseClassTest<dim>::TestGraidentAtQuadrature(domain::finite_el
 }
 
 template <int dim>
-void FiniteElementBaseClassTest<dim>::TestValueAtFaceQuadrature(
-    FiniteElement<dim> *test_fe) {
->>>>>>> Added FiniteElementI::GradientAtQuadrature.
-
+void FiniteElementBaseClassTest<dim>::TestValueAtFaceQuadrature(FiniteElement<dim> *test_fe) {
   dof_handler_.distribute_dofs(*test_fe->finite_element());
 
   auto cell = dof_handler_.begin_active();
