@@ -12,12 +12,7 @@ namespace bart::domain::finite_element {
 template <int dim>
 class FiniteElementMock : public FiniteElementI<dim> {
  public:
-<<<<<<< HEAD
-  using typename FiniteElementI<dim>::DealiiVector;
-=======
-  using Tensor = dealii::Tensor<1, dim>;
-  using Vector = dealii::Vector<double>;
->>>>>>> Added FiniteElementI::GradientAtQuadrature.
+  using typename FiniteElementI<dim>::DealiiVector, typename FiniteElementI<dim>::Tensor;
   MOCK_METHOD(int, polynomial_degree, (), (const, override));
   MOCK_METHOD(int, dofs_per_cell, (), (const, override));
   MOCK_METHOD(int, n_cell_quad_pts, (), (const, override));
@@ -30,14 +25,9 @@ class FiniteElementMock : public FiniteElementI<dim> {
   MOCK_METHOD(double, Jacobian, (const int), (const, override));
   MOCK_METHOD(double, FaceJacobian, (const int), (const, override));
   MOCK_METHOD((dealii::Tensor<1, dim>), FaceNormal, (), (const, override));
-<<<<<<< HEAD
   MOCK_METHOD(std::vector<double>, ValueAtQuadrature, (const DealiiVector&), (const, override));
   MOCK_METHOD(std::vector<double>, ValueAtFaceQuadrature, (const DealiiVector&), (const, override));
-=======
-  MOCK_METHOD(std::vector<double>, ValueAtQuadrature, (const system::moments::MomentVector&), (const, override));
-  MOCK_METHOD(std::vector<Tensor>, GradientAtQuadrature, (const Vector& values_at_dofs), (const, override));
-  MOCK_METHOD(std::vector<double>, ValueAtFaceQuadrature, (const dealii::Vector<double>&), (const, override));
->>>>>>> Added FiniteElementI::GradientAtQuadrature.
+  MOCK_METHOD(std::vector<Tensor>, GradientAtQuadrature, (const DealiiVector& values_at_dofs), (const, override));
   MOCK_METHOD((dealii::FiniteElement<dim, dim>*), finite_element, (), (override));
   MOCK_METHOD(dealii::FEValues<dim>*, values, (), (override));
   MOCK_METHOD(dealii::FEFaceValues<dim>*, face_values, (), (override));
