@@ -13,6 +13,8 @@ class FrameworkHelperMock : public FrameworkHelperI<dim> {
   MOCK_METHOD(std::unique_ptr<framework::FrameworkI>, BuildFramework, (builder::FrameworkBuilderI<dim>&,
       framework::FrameworkParameters&), (override));
   MOCK_METHOD(std::unique_ptr<framework::FrameworkI>, BuildFramework, (builder::FrameworkBuilderI<dim>&,
+      framework::FrameworkParameters&, std::shared_ptr<domain::DomainI<dim>>), (override));
+  MOCK_METHOD(std::unique_ptr<framework::FrameworkI>, BuildFramework, (builder::FrameworkBuilderI<dim>&,
       framework::FrameworkParameters&, system::moments::SphericalHarmonicI*), (override));
 };
 

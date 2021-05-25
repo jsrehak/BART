@@ -78,6 +78,7 @@ class Domain : public DomainI<dim>, public utility::HasDependencies {
   auto total_degrees_of_freedom() const -> int override ;
   auto dof_handler() const -> const dealii::DoFHandler<dim>& override { return dof_handler_; }
   auto locally_owned_dofs() const -> dealii::IndexSet override { return locally_owned_dofs_; }
+  auto finite_element() const { return finite_element_; }
 
  private:
 

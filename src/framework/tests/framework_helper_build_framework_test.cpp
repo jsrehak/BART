@@ -220,7 +220,8 @@ auto FrameworkHelperBuildFrameworkIntegrationTests<DimensionWrapper>::SetUp() ->
 
   ON_CALL(*group_solution_obs_ptr_, GetSolution(_)).WillByDefault(ReturnRef(solution_));
 
-  ON_CALL(*subroutine_framework_helper_obs_ptr_, BuildFramework(_,_)).WillByDefault(ReturnByMove(subroutine_framework_ptr));
+  ON_CALL(*subroutine_framework_helper_obs_ptr_, BuildFramework(_,_,A<std::shared_ptr<domain::DomainI<dim>>>()))
+      .WillByDefault(ReturnByMove(subroutine_framework_ptr));
 
   using DiffusionFormulationPtr = std::unique_ptr<typename FrameworkBuidler::DiffusionFormulation>;
   using DriftDiffusionFormulationPtr = std::unique_ptr<typename FrameworkBuidler::DriftDiffusionFormulation>;
@@ -458,7 +459,9 @@ auto FrameworkHelperBuildFrameworkIntegrationTests<DimensionWrapper>::SetExpecta
 
   if (parameters.use_nda_) {
     EXPECT_CALL(mock_builder, BuildAngularFluxIntegrator(Pointee(Ref(*quadrature_set_mock_ptr_)))).WillOnce(DoDefault());
-    EXPECT_CALL(*subroutine_framework_helper_obs_ptr_, BuildFramework(Ref(mock_builder), _)).WillOnce(DoDefault());
+    EXPECT_CALL(*subroutine_framework_helper_obs_ptr_,
+                BuildFramework(Ref(mock_builder), _, A<std::shared_ptr<domain::DomainI<dim>>>()))
+        .WillOnce(DoDefault());
     EXPECT_CALL(mock_builder, BuildSubroutine(Pointee(Ref(*subroutine_framework_obs_ptr_)),
                                               iteration::subroutine::SubroutineName::kGetScalarFluxFromFramework))
         .WillOnce(DoDefault());

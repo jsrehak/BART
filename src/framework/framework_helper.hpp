@@ -18,6 +18,9 @@ class FrameworkHelper : public FrameworkHelperI<dim> {
 
   [[nodiscard]] auto ToFrameworkParameters(const problem::ParametersI& parameters) -> framework::FrameworkParameters override;
   [[nodiscard]] auto BuildFramework(builder::FrameworkBuilderI<dim>&,
+                                    framework::FrameworkParameters&,
+                                    std::shared_ptr<domain::DomainI<dim>>) -> std::unique_ptr<framework::FrameworkI> override;
+  [[nodiscard]] auto BuildFramework(builder::FrameworkBuilderI<dim>&,
                                     framework::FrameworkParameters&) -> std::unique_ptr<framework::FrameworkI> override;
   [[nodiscard]] auto BuildFramework(builder::FrameworkBuilderI<dim>&,
                                     framework::FrameworkParameters&,

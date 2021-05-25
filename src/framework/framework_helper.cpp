@@ -113,10 +113,18 @@ auto FrameworkHelper<dim>::ToFrameworkParameters(
   return return_parameters;
 }
 
-template<int dim>
+template <int dim>
 auto FrameworkHelper<dim>::BuildFramework(
     builder::FrameworkBuilderI<dim>& builder,
     framework::FrameworkParameters& parameters) -> std::unique_ptr<framework::FrameworkI> {
+  return std::move(BuildFramework(builder, parameters, std::shared_ptr<domain::DomainI<dim>>()));
+}
+
+template<int dim>
+auto FrameworkHelper<dim>::BuildFramework(
+    builder::FrameworkBuilderI<dim>& builder,
+    framework::FrameworkParameters& parameters,
+    std::shared_ptr<domain::DomainI<dim>> passed_domain_ptr) -> std::unique_ptr<framework::FrameworkI> {
   using FrameworkPart = framework::builder::FrameworkPart;
   using MomentCalculator = typename builder::FrameworkBuilderI<dim>::MomentCalculator;
   using OuterIteration = typename builder::FrameworkBuilderI<dim>::OuterIteration;
@@ -166,15 +174,23 @@ auto FrameworkHelper<dim>::BuildFramework(
 
   fmt::print(fg(fmt::color::green) | fmt::emphasis::bold, "Building framework: {}\n", parameters.name);
 
-  auto finite_element_ptr = Shared(builder.BuildFiniteElement(parameters.cell_finite_element_type,
-                                                              parameters.discretization_type,
-                                                              parameters.polynomial_degree));
-  auto domain_ptr = Shared(builder.BuildDomain(parameters.domain_size, parameters.number_of_cells,
-                                               finite_element_ptr, parameters.material_mapping));
-
-  fmt::print("Setting up domain...\n");
-  domain_ptr->SetUpMesh(parameters.uniform_refinements);
-  domain_ptr->SetUpDOF();
+  std::shared_ptr<domain::finite_element::FiniteElementI<dim>> finite_element_ptr;
+  std::shared_ptr<domain::DomainI<dim>> domain_ptr;
+  if (passed_domain_ptr != nullptr) {
+    fmt::print("Using domain from parent framework...\n");
+    domain_ptr = passed_domain_ptr;
+    finite_element_ptr = dynamic_cast<domain::Domain<dim>*>(passed_domain_ptr.get())->finite_element();
+  } else {
+    fmt::print("Building domain...\n");
+    finite_element_ptr = Shared(builder.BuildFiniteElement(parameters.cell_finite_element_type,
+                                                           parameters.discretization_type,
+                                                           parameters.polynomial_degree));
+    domain_ptr = Shared(builder.BuildDomain(parameters.domain_size, parameters.number_of_cells,
+                                            finite_element_ptr, parameters.material_mapping));
+    fmt::print("Setting up domain...\n");
+    domain_ptr->SetUpMesh(parameters.uniform_refinements);
+    domain_ptr->SetUpDOF();
+  }
 
   // These objects will be set up differently depending on the implementation
   std::shared_ptr<QuadratureSet> quadrature_set_ptr{ nullptr };
@@ -378,9 +394,11 @@ auto FrameworkHelper<dim>::BuildFramework(
 
     std::unique_ptr<FrameworkI> subroutine_framework_ptr{ nullptr };
     if (subroutine_framework_helper_ptr_ != nullptr) {
-      subroutine_framework_ptr = std::move(subroutine_framework_helper_ptr_->BuildFramework(builder, two_grid_parameters));
+      subroutine_framework_ptr = std::move(subroutine_framework_helper_ptr_->BuildFramework(builder,
+                                                                                            two_grid_parameters,
+                                                                                            domain_ptr));
     } else {
-      subroutine_framework_ptr = std::move(BuildFramework(builder, two_grid_parameters));
+      subroutine_framework_ptr = std::move(BuildFramework(builder, two_grid_parameters, domain_ptr));
     }
     auto rhs_vector = std::make_shared<dealii::Vector<double>>(system_ptr->current_moments->GetMoment({0, 0, 0}).size());
 
@@ -417,9 +435,11 @@ auto FrameworkHelper<dim>::BuildFramework(
     nda_parameters.nda_data_.higher_order_angular_flux_ = angular_solutions_;
     std::unique_ptr<FrameworkI> subroutine_framework_ptr{ nullptr };
     if (subroutine_framework_helper_ptr_ != nullptr) {
-      subroutine_framework_ptr = std::move(subroutine_framework_helper_ptr_->BuildFramework(builder, nda_parameters));
+      subroutine_framework_ptr = std::move(subroutine_framework_helper_ptr_->BuildFramework(builder,
+                                                                                            nda_parameters,
+                                                                                            domain_ptr));
     } else {
-      subroutine_framework_ptr = std::move(BuildFramework(builder, nda_parameters));
+      subroutine_framework_ptr = std::move(BuildFramework(builder, nda_parameters, domain_ptr));
     }
     post_processing_subroutine = builder.BuildSubroutine(std::move(subroutine_framework_ptr),
                                                          iteration::subroutine::SubroutineName::kGetScalarFluxFromFramework);
