@@ -53,7 +53,7 @@ class ParametersDealiiHandler : public ParametersI {
 
     // Acceleration parameters
     const std::string kUseTwoGridAcceleration_{ "use two-grid acceleration" };
-    const std::string kDoNDA_{ "do nda" };
+    const std::string kDoNDA_{ "use nda" };
 
     // Solver parameters
     const std::string kEigenSolver_{ "eigen solver name" };
