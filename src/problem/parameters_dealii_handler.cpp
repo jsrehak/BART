@@ -44,6 +44,7 @@ auto ParametersDealiiHandler::Parse(dealii::ParameterHandler& handler) -> void {
   // Acceleration parameters
   use_two_grid_acceleration_ = handler.get_bool(key_words_.kUseTwoGridAcceleration_);
   do_nda_ = handler.get_bool(key_words_.kDoNDA_);
+  use_two_grid_accelerated_nda_ = handler.get_bool(key_words_.kUseTwoGridAcceleratedNDA_);
 
   // Solver parameters
   eigen_solver_ = kEigenSolverTypeMap_.at(handler.get(key_words_.kEigenSolver_));
@@ -172,6 +173,8 @@ auto ParametersDealiiHandler::SetUpAccelerationParameters(dealii::ParameterHandl
 
   handler.declare_entry(key_words_.kUseTwoGridAcceleration_, "false", Pattern::Bool(), "Use two-grid acceleration");
   handler.declare_entry(key_words_.kDoNDA_, "false", Pattern::Bool(), "Boolean to determine NDA or not");
+  handler.declare_entry(key_words_.kUseTwoGridAcceleratedNDA_, "false", Pattern::Bool(),
+                        "Use two-grid accelerated NDA");
 }
 
 // SOLVER PARAMETERS ===========================================================

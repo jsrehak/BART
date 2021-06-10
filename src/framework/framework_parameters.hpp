@@ -68,6 +68,7 @@ struct FrameworkParameters {
   // Acceleration methods
   bool use_nda_{ false };
   bool use_two_grid_{ false };
+  bool use_two_grid_nda_{ false };
   // Indicates "level" of the framework, with 0 being the top level
   int framework_level_{ 0 };
   // Higher order data to support NDA

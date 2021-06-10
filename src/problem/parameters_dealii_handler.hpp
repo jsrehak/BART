@@ -54,6 +54,7 @@ class ParametersDealiiHandler : public ParametersI {
     // Acceleration parameters
     const std::string kUseTwoGridAcceleration_{ "use two-grid acceleration" };
     const std::string kDoNDA_{ "use nda" };
+    const std::string kUseTwoGridAcceleratedNDA_{ "use two-grid accelerated nda" };
 
     // Solver parameters
     const std::string kEigenSolver_{ "eigen solver name" };
@@ -115,6 +116,8 @@ class ParametersDealiiHandler : public ParametersI {
   // Acceleration parameters
   auto UseTwoGridAcceleration() const -> bool override { return use_two_grid_acceleration_; };
   auto DoNDA() const -> bool override { return do_nda_; }
+  auto UseTwoGridAcceleratedNDA() const -> bool override { return use_two_grid_accelerated_nda_; };
+
 
   // Solver parameters
   auto EigenSolver() const -> EigenSolverType override { return eigen_solver_; }
@@ -158,6 +161,7 @@ class ParametersDealiiHandler : public ParametersI {
   // Acceleration parameters
   bool                                 use_two_grid_acceleration_{ false };
   bool                                 do_nda_{ false };
+  bool                                 use_two_grid_accelerated_nda_{ false };
   // Solver parameters
   EigenSolverType                      eigen_solver_{ EigenSolverType::kNone };
   K_EffectiveUpdaterName               k_effective_updater_type_{ K_EffectiveUpdaterName::kCalculatorViaFissionSource };

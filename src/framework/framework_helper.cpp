@@ -72,6 +72,7 @@ auto FrameworkHelper<dim>::ToFrameworkParameters(
     .polynomial_degree{ framework::FrameworkParameters::PolynomialDegree(problem_parameters.FEPolynomialDegree()) },
     .use_nda_{ problem_parameters.DoNDA() },
     .use_two_grid_{ problem_parameters.UseTwoGridAcceleration() },
+    .use_two_grid_nda_{ problem_parameters.UseTwoGridAcceleratedNDA() },
     .output_aggregated_source_data{ problem_parameters.OutputAggregatedSourceData() },
     .output_scalar_flux_as_vtu{ problem_parameters.OutputScalarFluxAsVTU() },
     .output_fission_source_as_vtu{ problem_parameters.OutputFissionSourceAsVTU() },
@@ -426,6 +427,8 @@ auto FrameworkHelper<dim>::BuildFramework(
     auto nda_parameters{ parameters };
     nda_parameters.name = "NDA Drift-Diffusion";
     nda_parameters.use_nda_ = false;
+    nda_parameters.use_two_grid_ = parameters.use_two_grid_nda_;
+    nda_parameters.use_two_grid_nda_ = false;
     nda_parameters.equation_type = problem::EquationType::kDriftDiffusion;
     nda_parameters.framework_level_ = 1;
     nda_parameters.output_filename_base = parameters.output_filename_base + "_nda";

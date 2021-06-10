@@ -67,6 +67,8 @@ class ParametersI {
   virtual auto UseTwoGridAcceleration() const -> bool = 0;
   /*! \brief Gets if NDA should be used */
   virtual auto DoNDA() const -> bool = 0;
+  /*! \brief Gets if TGNda should be used */
+  virtual auto UseTwoGridAcceleratedNDA() const -> bool = 0;
                                                                       
   // Solver parameters
   /*! \brief Gets solver type for eigen iterations */
